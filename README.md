@@ -1,5 +1,9 @@
 # Canvas LMS MCQ Automated Assist Tool
 
+> TL/DR: Copy and paste this line into Claude Code or your desired coding agent:
+```
+Clone, and set-up the tool following the instructions in this repository: https://github.com/Jack74593/canvas-autosolve
+```
 A standalone, pure Python automation assistant and question solver for Canvas LMS assessments.
 
 It connects directly to an active Google Chrome / Chromium browser via the **Chrome DevTools Protocol (CDP)** over WebSockets. **No browser extensions, plugins, or modified binaries are required.**
