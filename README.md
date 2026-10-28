@@ -1,10 +1,20 @@
 # Canvas LMS MCQ Automated Assist Tool
 
-A standalone, Python-based automation assistant and question solver for Canvas LMS assessments.
+A standalone, pure Python automation assistant and question solver for Canvas LMS assessments.
 
 It connects directly to an active Google Chrome / Chromium browser via the **Chrome DevTools Protocol (CDP)** over WebSockets. **No browser extensions, plugins, or modified binaries are required.**
 
-The tool extracts questions (including MathML formulas and LaTeX), solves them using AI or custom agent logic, clicks the correct radio buttons or checkboxes (with full support for multiple answers), triggers Canvas's native autosave event handlers, and advances through questions automatically.
+### Key Capabilities
+- **Multi-Tab Quiz Search**: Automatically scans all open browser tabs to discover in-progress and unstarted quizzes.
+- **Strict Retake Policy**: Strictly **ignores** any tab or button with "Take the Quiz Again", "Take again", "Retake", or "Làm lại bài kiểm tra".
+- **Automatic Quiz Activation**: Automatically starts quizzes on ready tabs by activating "Take the Quiz" / "Làm bài kiểm tra" and waiting for `/take` and questions to render.
+- **Full Question Type Coverage**:
+  - Single-choice radio buttons (`input[type="radio"]`)
+  - Multi-choice checkboxes (`input[type="checkbox"]`)
+  - Matching & multiple dropdowns (`select.question_input, select`)
+- **Mathematical Formula Engine**: Converts MathML vectors, fractions, roots, super/subscripts, and Canvas equation images into clean LaTeX.
+- **Multi-Tab Autonomous Auto Mode**: Solves all questions across all open quiz tabs sequentially, never auto-submitting without student review.
+- **Turnkey Agent Support**: Includes dedicated guidance in `AGENTS.md` and `CLAUDE.md` for AI coding agents.
 
 ---
 
@@ -20,7 +30,7 @@ The tool extracts questions (including MathML formulas and LaTeX), solves them u
                                   v
 +-------------------------------------------------------------------+
 |                        canvas_assist.py                           |
-|       (DOM Extraction, MathML Parser, Event Synthesizer)          |
+|  (Multi-Tab Search, Retake Filter, Auto-Start, MathML, Dropdowns) |
 +---------------------------------+---------------------------------+
                                   |
          +------------------------+------------------------+
@@ -36,7 +46,81 @@ The tool extracts questions (including MathML formulas and LaTeX), solves them u
 
 ---
 
-## 1. Prerequisites
+## 1. Quick Agent Turnkey Prompt
+
+If you are a coding agent (Claude Code, Cursor, Windsurf) or handing this repo to one, copy and paste this prompt:
+
+> **Agent Prompt:**
+> "I have cloned the Canvas LMS assist tool repository and am ready to run it. Please:
+> 1. Verify Python 3.10+ and install requirements: `pip install -r requirements.txt`.
+> 2. Ensure Google Chrome is running with remote debugging: `curl -s http://127.0.0.1:9222/json/version`. (If not running, launch with `--remote-debugging-port=9222`).
+> 3. Verify open tabs by running `python3 canvas_assist.py search`. Notice tabs with 'Take the Quiz Again' are strictly ignored.
+> 4. To start all unstarted quizzes: `python3 canvas_assist.py start`.
+> 5. To run the full autonomous multi-tab solving pipeline across all quizzes: `python3 canvas_assist.py auto`. Refer to `AGENTS.md` and `CLAUDE.md` for full specifications."
+
+See **[AGENTS.md](AGENTS.md)** for full agent-specific documentation.
+
+---
+
+## 2. Setting Up from a Clean Claude Code Installation
+
+If you just installed Claude Code on a fresh machine:
+
+### Step 1: Open Terminal & Clone Repository
+```bash
+git clone <repo-url> canvas
+cd canvas
+```
+
+### Step 2: Set Up Python Environment
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+chmod +x canvas_assist.py
+```
+
+### Step 3: Launch Google Chrome with CDP
+Ensure Chrome is running with `--remote-debugging-port=9222`:
+
+```bash
+# macOS
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 &
+
+# Linux
+google-chrome --remote-debugging-port=9222 &
+
+# Windows (Command Prompt)
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
+```
+
+Verify that Chrome is listening:
+```bash
+curl -s http://127.0.0.1:9222/json/version
+```
+
+### Step 4: Configure AI Backend Key
+Export your API key or local model gateway:
+
+```bash
+# Local Claude Code / Anthropic gateway
+export ANTHROPIC_BASE_URL="http://localhost:8080"
+
+# Or Google Gemini API key
+export GEMINI_API_KEY="your-gemini-key"
+
+# Or OpenRouter API key
+export OPENROUTER_API_KEY="your-openrouter-key"
+```
+
+### Step 5: Test Connection
+```bash
+python3 canvas_assist.py search
+```
+
+---
+
+## 3. Prerequisites
 
 Before setting up on a new device, ensure you have:
 
@@ -335,13 +419,20 @@ curl -X POST http://127.0.0.1:8765/api/answer \
 - Verify with `curl http://127.0.0.1:9222/json`.
 
 ### 2. `No question container found on current page`
-- You may still be on the quiz instructions / preview page. Click **"Take the quiz"** in the browser to start the attempt.
-- Ensure the active tab is open to `/courses/:course_id/quizzes/:quiz_id/take`.
+- The tab is on the quiz preview / instructions page. You do not need to click manually:
+  - Run `python3 canvas_assist.py start` to start all ready quizzes automatically.
+  - Or run `python3 canvas_assist.py auto` which will search, start, and solve automatically.
+- Tabs with "Take the Quiz Again" / "Làm lại bài kiểm tra" buttons are strictly ignored by design.
 
 ### 3. Checkbox vs Radio Button Behavior
 - Canvas supports both single-selection radio buttons and multi-selection checkboxes.
 - `canvas_assist.py` automatically detects the input type. When multi-selection is required, it checks all matching boxes and unchecks non-selected boxes.
 
-### 4. Canvas Autosave Synchronization
+### 4. Matching Dropdowns Support
+- Matching and multiple dropdown questions (`select.question_input`) are automatically detected and extracted.
+- Choices are matched using exact text, value, normalized decimal values (e.g. `20,50%` $\leftrightarrow$ `20.50%`), substrings, or indices.
+- Dispatches native React prototype property descriptor events and jQuery `change` events to trigger autosave.
+
+### 5. Canvas Autosave Synchronization
 - Canvas LMS uses background AJAX requests to autosave student answers.
 - `canvas_assist.py` fires `pointerdown` → `mousedown` → `pointerup` → `mouseup` → `click` → `input` → `change` events, ensuring Canvas's draft autosave event listeners are triggered.

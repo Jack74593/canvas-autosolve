@@ -119,15 +119,21 @@ python3 canvas_assist.py serve --port 8765
 ```
 
 Endpoints available to any language / desktop agent:
-- `GET /api/status`: Quiz state, title, and page URL.
+- `GET /api/status`: Current quiz state, title, and page URL.
+- `GET /api/tabs`: Scans all open browser tabs for quizzes (in-progress, ready, ignored retakes).
 - `GET /api/question`: Active question statement, MathML LaTeX, and option list.
-- `POST /api/answer`: Selects radio button:
+- `POST /api/start`: Starts all ready quizzes across open tabs (strictly ignores retakes).
+- `POST /api/answer`: Selects radio option, checkbox, or matching dropdowns:
   ```json
   { "option": 2, "next": true, "delay": 2.0 }
   ```
+  or for matching dropdowns:
+  ```json
+  { "option": ["980 người", "20,50%", "Thất nghiệp chu kỳ"], "next": true }
+  ```
 - `POST /api/solve`: Solves active question with AI.
 - `POST /api/step`: Solves, answers, and clicks Next.
-- `POST /api/next`: Clicks Next button.
+- `POST /api/next`: Clicks Next button safely.
 
 Example with `curl`:
 ```bash
@@ -139,7 +145,28 @@ curl -X POST http://127.0.0.1:8765/api/answer \
 
 ---
 
-## 4. Technical Highlights & Safeguards
+## 4. Multi-Tab Architecture & Dropdown Answering Engine
+
+The pure Python automation engine communicates directly with Chrome via Chrome DevTools Protocol (port 9222).
+
+### A. Multi-Tab Discovery & Retake Filtering
+- Scans all open browser tabs via `/json/list`.
+- Identifies in-progress quizzes (`[TAKING]`) and quizzes ready to be started (`[READY]`).
+- **Strict Retake Filter**: Excludes tabs where button text/attributes match `"Take the Quiz Again"`, `"Take again"`, `"Retake"`, or `"Làm lại bài kiểm tra"`. Retake tabs are categorized as `[IGNORED]` and skipped.
+
+### B. Matching & Multiple Dropdowns Support
+- Targets `<select.question_input, select>` within `.question`, `.matching_question`, or New Quizzes containers.
+- Matches target choices using exact text, option values, normalized numbers/percentages (handling comma vs dot decimals e.g., `20,50%` $\leftrightarrow$ `20.50%`), substrings, or 1-based indices.
+- Dispatches native React prototype descriptor property setters and jQuery `change` events to guarantee Canvas background draft autosave sync.
+
+### C. Turnkey Coding Agent Support
+For AI coding agents (Claude Code, Cursor, Windsurf, AutoGPT):
+- Refer to **[AGENTS.md](AGENTS.md)** for the turnkey copy-paste agent prompt, schemas, and automation recipes.
+- Refer to **[CLAUDE.md](CLAUDE.md)** for workspace rules and guidelines.
+
+---
+
+## 5. Technical Highlights & Safeguards
 
 - **MathML to LaTeX Engine**: Converts `<math>`, `<mfrac>`, `<msqrt>`, `<msup>`, `<msub>`, and `<mover>` (for vector arrows $\vec{v}$) into clean mathematical expressions.
 - **Realistic DOM Events**: Dispatches `pointerdown` -> `mousedown` -> `pointerup` -> `mouseup` -> `click`, sets `checked = true`, dispatches `input` & `change` events with `bubbles: true`, and triggers jQuery event handlers.

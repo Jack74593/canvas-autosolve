@@ -1200,7 +1200,7 @@ JS_CLICK_NEXT = r"""
 # AI Question Solver Implementation
 # ---------------------------------------------------------------------------
 
-SOLVER_SYSTEM_PROMPT = """You are an expert academic tutor and exam-solving engine specializing in Vietnamese and international high school Physics, Mathematics, Chemistry, Natural Sciences, Economics, Law, and Social Sciences (specifically Vietnamese High School GD Kinh tế và Pháp luật, Lịch sử, Địa lí, and Physics Grade 11).
+SOLVER_SYSTEM_PROMPT = """You are an expert academic tutor and exam-solving engine specializing in Vietnamese and CIE A-Level Physics, Mathematics, Chemistry, Natural Sciences, Economics, etc.
 
 Your task is to analyze the question and determine the EXACT correct answer(s).
 
