@@ -46,19 +46,44 @@ It connects directly to an active Google Chrome / Chromium browser via the **Chr
 
 ---
 
-## 1. Quick Agent Turnkey Prompt
+## 1. Turnkey Prompt for Coding Agents (Autonomous Self-Setup)
 
-If you are a coding agent (Claude Code, Cursor, Windsurf) or handing this repo to one, copy and paste this prompt:
+After cloning the repository and `cd`-ing into it, copy and paste this exact prompt into **Claude Code**, Cursor, Windsurf, or any autonomous coding agent:
 
-> **Agent Prompt:**
-> "I have cloned the Canvas LMS assist tool repository and am ready to run it. Please:
-> 1. Verify Python 3.10+ and install requirements: `pip install -r requirements.txt`.
-> 2. Ensure Google Chrome is running with remote debugging: `curl -s http://127.0.0.1:9222/json/version`. (If not running, launch with `--remote-debugging-port=9222`).
-> 3. Verify open tabs by running `python3 canvas_assist.py search`. Notice tabs with 'Take the Quiz Again' are strictly ignored.
-> 4. To start all unstarted quizzes: `python3 canvas_assist.py start`.
-> 5. To run the full autonomous multi-tab solving pipeline across all quizzes: `python3 canvas_assist.py auto`. Refer to `AGENTS.md` and `CLAUDE.md` for full specifications."
+```markdown
+Set up this repository completely on your own from scratch so it is immediately operational:
 
-See **[AGENTS.md](AGENTS.md)** for full agent-specific documentation.
+1. Environment & Dependencies:
+   - Check if a Python virtual environment (.venv) exists. If not, create one (`python3 -m venv .venv`).
+   - Activate it and install dependencies: `pip install -r requirements.txt`.
+   - Ensure `canvas_assist.py` is executable (`chmod +x canvas_assist.py`).
+
+2. Browser CDP Connection:
+   - Check if Google Chrome is listening on port 9222: `curl -s http://127.0.0.1:9222/json/version`.
+   - If port 9222 is NOT responding:
+     - Detect the host operating system.
+     - Automatically launch Google Chrome in the background with `--remote-debugging-port=9222`:
+       * macOS: `/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-first-run --no-default-browser-check >/dev/null 2>&1 &`
+       * Linux: `google-chrome --remote-debugging-port=9222 --no-first-run >/dev/null 2>&1 &`
+       * Windows: `Start-Process "chrome.exe" -ArgumentList "--remote-debugging-port=9222"`
+     - Wait 2 seconds and verify the connection with `curl -s http://127.0.0.1:9222/json/version`.
+
+3. AI Backend Verification:
+   - Check for available AI backends: verify if `ANTHROPIC_BASE_URL`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY` is set in the environment or `.env`.
+   - If none are set, check if a local Anthropic proxy is running on `http://localhost:8080`, or prompt me for an API key.
+
+4. Tab & Quiz Discovery:
+   - Run `python3 canvas_assist.py search` to scan all open browser tabs.
+   - Report the status of all detected tabs (in-progress quizzes, ready-to-start quizzes, and ignored retakes).
+
+5. Readiness:
+   - Report when everything is operational, and ask if I would like you to run:
+     * Full Auto Mode (Search -> Start -> Solve across tabs): `python3 canvas_assist.py auto`
+     * Start All Quizzes Only: `python3 canvas_assist.py start`
+     * Status Inspection: `python3 canvas_assist.py status`
+```
+
+See **[AGENTS.md](AGENTS.md)** and **[CLAUDE.md](CLAUDE.md)** for architecture details, schemas, and operational guidelines.
 
 ---
 
