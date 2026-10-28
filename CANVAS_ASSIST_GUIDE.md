@@ -139,29 +139,7 @@ curl -X POST http://127.0.0.1:8765/api/answer \
 
 ---
 
-## 4. In-Browser Extension & Floating Control HUD
-
-The browser extension (`CANVAS-AUTO-ANSWER-main` and `/Users/jack74593/Downloads/canvas`) has been enhanced with:
-
-1. **Floating Assist HUD (`#canvas-assist-hud`)**:
-   - Injected directly into Canvas quiz pages.
-   - **`[ ⚡ Solve & Next ]`**: Solves visible question, inputs radio button, waits 2s for autosave, and advances.
-   - **`[ ▶ Auto Solve All ]`**: Automatically solves and loops through all questions until the quiz is completed.
-   - **`[ Next ❯ ]`**: Safely advances to next question.
-   - **`[x] Auto-Next Checkbox`**: Toggle auto-advancing after answering.
-   - **Status Badge**: Real-time status (`Q1/10 | Saved ✓`).
-
-2. **Fixed Premature Next Click**:
-   - Removed the buggy `setTimeout(..., 500)` that previously skipped questions before the AI could solve them.
-   - Next button is now clicked strictly after the radio button is verified and autosaved.
-
-3. **Dual Model Routing in `background.js`**:
-   - Automatically routes questions to the local model gateway (`http://localhost:8080/v1/messages`) or agent bridge.
-   - Automatically falls back to Google Gemini API using stored key if local gateway is offline.
-
----
-
-## 5. Technical Highlights & Safeguards
+## 4. Technical Highlights & Safeguards
 
 - **MathML to LaTeX Engine**: Converts `<math>`, `<mfrac>`, `<msqrt>`, `<msup>`, `<msub>`, and `<mover>` (for vector arrows $\vec{v}$) into clean mathematical expressions.
 - **Realistic DOM Events**: Dispatches `pointerdown` -> `mousedown` -> `pointerup` -> `mouseup` -> `click`, sets `checked = true`, dispatches `input` & `change` events with `bubbles: true`, and triggers jQuery event handlers.
