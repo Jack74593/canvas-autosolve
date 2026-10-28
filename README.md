@@ -65,7 +65,7 @@ Set up this repository completely on your own from scratch so it is immediately 
    - Ensure `canvas_assist.py` is executable (`chmod +x canvas_assist.py`).
 
 2. Browser CDP Connection:
-   - Check if Google Chrome is listening on port 9222: `curl -s http://127.0.0.1:9222/json/version`.
+   - Check if Google Chrome or your desired browser is listening on port 9222: `curl -s http://127.0.0.1:9222/json/version`.
    - If port 9222 is NOT responding:
      - Detect the host operating system.
      - Automatically launch Google Chrome in the background with `--remote-debugging-port=9222`:
