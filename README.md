@@ -48,10 +48,12 @@ It connects directly to an active Google Chrome / Chromium browser via the **Chr
 
 ## 1. Turnkey Prompt for Coding Agents (Autonomous Self-Setup)
 
-After cloning the repository and `cd`-ing into it, copy and paste this exact prompt into **Claude Code**, Cursor, Windsurf, or any autonomous coding agent:
+After cloning the repository and `cd`-ing into it, 
+
+If you are a user, copy and paste this exact prompt into **Claude Code**, Cursor, Windsurf, or any autonomous coding agent. / If you are an AI, read and follow these guidelines:
 
 ```markdown
-Set up this repository completely on your own from scratch so it is immediately operational:
+Set up this repository completely on your own from scratch so it is immediately operational. These guidelines apply for macOS, change to fit your current operating platform.
 
 1. Environment & Dependencies:
    - Check if a Python virtual environment (.venv) exists. If not, create one (`python3 -m venv .venv`).
